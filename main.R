@@ -3,10 +3,12 @@ library(optparse)
 source("read10X.R")
 
 option_list = list(
-        make_option(c("-d1", "--dir1"), type="character", default=NULL, 
-                    help="data directory 1", metavar="character"),
-        make_option(c("-d2", "--dir2"), type="character", default=NULL, 
-                    help="ata directory 2", metavar="character")
+        make_option(c("-s1", "--sample1"), type="character", default=NULL, 
+                    help="sample 1 name", metavar="character"),
+        make_option(c("-s2", "--sample2"), type="character", default=NULL, 
+                    help="sample 2 name", metavar="character"),
+        make_option(c("-p", "--project"), type="character", default=NULL, 
+                    help="project name", metavar="character")
 );
 
 opt_parser = OptionParser(option_list=option_list);
@@ -17,7 +19,7 @@ if (is.null(opt$file)){
         stop("At least one argument must be supplied (input file).n", call.=FALSE)
 }
 
-input_data_list = c(opt$dir1, opt$dir2)
+sample_list = c(opt$sample1, opt$sample2)
 
-read_input(input_data_list)
+merged_seurat <- read_input(sample_list, opt$project)
 

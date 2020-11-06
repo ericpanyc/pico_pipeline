@@ -1,14 +1,15 @@
 library(Seurat)
 
-read_input <- function(dir_list) {
-        object_list <- paste0(dir_list, "_filtered_feature_bc_matrix")
-        for (file in object_list){
-                seurat_data <- Read10X(data.dir = paste0("data/", file))
+read_input <- function(sample_list, project) {
+        dir_list <- paste0(dir_list, "_filtered_feature_bc_matrix")
+        seurat_list = list()
+        for (file in dir_list){
+                seurat_data <- Read10X(data.dir = dir_list)
                 seurat_obj <- CreateSeuratObject(counts = seurat_data, 
                                                  min.features = 100, 
                                                  project = file)
-                assign(file, seurat_obj)
+                seurat_list[[file]] <- seurat_obj
         }
-        merge() <- merge(object_list[1], y = ob, add.cell.ids = c("VS5", "VS8"), project = "naive")
-        
+        merged_seurat <- merge(object_list[[1]], y = tail(seurat_list,-1), add.cell.ids = c("VS5", "VS8"), project = project)
+        return(merged_seurat)
 }
