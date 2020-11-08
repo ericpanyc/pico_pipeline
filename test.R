@@ -54,34 +54,46 @@ annotations <- annotations %>%
 annotations$entrezid <- as.character(annotations$entrezid)
 
 name_list <- c("VS4","VS5")
-object_list <- paste0(object_list, "_filtered_feature_bc_matrix")
+object_list <- paste0(name_list, "_filtered_feature_bc_matrix")
+
+VS4_data <- Read10X(data.dir = "VS4_filtered_feature_bc_matrix")
+VS4 <- CreateSeuratObject(counts = VS4_data, 
+                                 min.features = 100,
+                                project = "VS4")
+VS5_data <- Read10X(data.dir = "VS5_filtered_feature_bc_matrix")
+VS5 <- CreateSeuratObject(counts = VS5_data, 
+                          min.features = 100,
+                          project = "VS5")
+
+
 
 # Read in 10x outputs files
 seurat_list = list()
 for (file in object_list){
-        seurat_data <- Read10X(data.dir = object_list)
+        seurat_data <- Read10X(data.dir = file)
         seurat_obj <- CreateSeuratObject(counts = seurat_data, 
                                          min.features = 100, 
                                          project = file)
         seurat_list[[file]] <- seurat_obj
+        assign(file, seurat_obj)
 }
 
 merged_seurat <- merge(x = seurat_list[[1]], y = tail(seurat_list,-1), add.cell.ids = name_list)
 # naive <- merge(VS4_filtered_feature_bc_matrix, y = c(VS6_filtered_feature_bc_matrix, VS9_filtered_feature_bc_matrix), add.cell.ids = c("VS4", "VS6", "VS9"), project = "naive")
 
-naive@meta.data$orig.ident <- sapply(naive@meta.data$orig.ident, function(i) substr(i,1,3))
+merged_seurat@meta.data$orig.ident <- sapply(merged_seurat@meta.data$orig.ident, function(i) substr(i,1,3))
 # naive@meta.data$orig.ident <- sapply(naive@meta.data$orig.ident, function(i) substr(i,1,3))
 
 # all <- merge(x = naive, y = naive, add.cell.ids = c("N","S"), project = "all")
 
 # Add number of genes per UMI for each cell to metadata
-naive$log10GenesPerUMI <- log10(naive$nFeature_RNA) / log10(naive$nCount_RNA)
+merged_seurat$log10GenesPerUMI <- log10(merged_seurat$nFeature_RNA) / log10(merged_seurat$nCount_RNA)
 
 # Compute percent mito ratio
-naive$mitoRatio <- PercentageFeatureSet(object = naive, pattern = "^MT-")
-naive$mitoRatio <- naive@meta.data$mitoRatio / 100
+merged_seurat$mitoRatio <- PercentageFeatureSet(object = merged_seurat, pattern = "^MT-")
+merged_seurat$mitoRatio <- merged_seurat@meta.data$mitoRatio / 100
 
-metadata <- naive@meta.data
+metadata <- merged_seurat@meta.data
 metadata$cells <- rownames(metadata)
 metadata <- metadata %>%
         dplyr::rename(nUMI = nCount_RNA,
@@ -89,10 +101,10 @@ metadata <- metadata %>%
 
 metadata$sample <- NA
 metadata$sample <- metadata$orig.ident
-# metadata$sample[which(str_detect(metadata$cells, "^N_"))] <- "naive"
-# metadata$sample[which(str_detect(metadata$cells, "^S_"))] <- "naive"
+# metadata$sample[which(str_detect(metadata$cells, "^N_"))] <- "merged_seurat"
+# metadata$sample[which(str_detect(metadata$cells, "^S_"))] <- "merged_seurat"
 
-naive@meta.data <- metadata
+merged_seurat@meta.data <- metadata
 
 # Visualize the number of cell counts per sample
 metadata %>% 
@@ -102,7 +114,7 @@ metadata %>%
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
         theme(plot.title = element_text(hjust=0.5, face="bold")) +
         ggtitle("NCells")
-
+ggsave("outputs/cell_count.png")
 # Visualize the number UMIs/transcripts per cell
 metadata %>% 
         ggplot(aes(color=sample, x=nUMI, fill= sample)) + 
@@ -111,6 +123,7 @@ metadata %>%
         theme_classic() +
         ylab("Cell density") +
         geom_vline(xintercept = 500)
+ggsave("outputs/UMI_density.png")
 
 # Visualize the distribution of genes detected per cell via boxplot
 metadata %>% 
@@ -120,6 +133,7 @@ metadata %>%
         theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
         theme(plot.title = element_text(hjust=0.5, face="bold")) +
         ggtitle("NCells vs NGenes")
+ggsave("outputs/gene_count_boxplot.png")
 
 # Visualize the correlation between genes detected and number of UMIs and determine whether strong presence of cells with low numbers of genes/UMIs
 metadata %>% 
@@ -133,7 +147,7 @@ metadata %>%
         geom_vline(xintercept = 500) +
         geom_hline(yintercept = 250) +
         facet_wrap(~sample)
-
+ggsave("outputs/nGene~nUMI.png")
 # Visualize the distribution of mitochondrial gene expression detected per cell
 metadata %>% 
         ggplot(aes(color=sample, x=mitoRatio, fill=sample)) + 
@@ -141,16 +155,16 @@ metadata %>%
         scale_x_log10() + 
         theme_classic() +
         geom_vline(xintercept = 0.2)
-
+ggsave("outputs/mito_distribution.png")
 # Visualize the overall complexity of the gene expression by visualizing the genes detected per UMI
 metadata %>%
         ggplot(aes(x=log10GenesPerUMI, color = sample, fill=sample)) +
         geom_density(alpha = 0.2) +
         theme_classic() +
         geom_vline(xintercept = 0.8)
-
+ggsave("outputs/gene_complexity.png")
 # Filter out low-quality cells
-filtered_seurat <- subset(x = naive, 
+filtered_seurat <- subset(x = merged_seurat, 
                           subset=
                                   (nGene >= 250) & 
                                   (log10GenesPerUMI > 0.80) & 
