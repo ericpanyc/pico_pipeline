@@ -1,10 +1,5 @@
-library(Seurat)
-library(dplyr)
-library(ggplot2)
-source("filter_seurat.R")
-
-read_filter <- function(sample_list, project, is_merge) {
-        # print(is_merge)
+read_filter <- function(sample_list, project) {
+        print("arguments parsed successfully, start to load data")
         seurat_list = list()
         for (sample in sample_list){
                 seurat_data <- Read10X(data.dir = paste0("../data/",sample, "_filtered_feature_bc_matrix"))
@@ -13,17 +8,14 @@ read_filter <- function(sample_list, project, is_merge) {
                                                  project = sample)
                 seurat_list[[sample]] <- seurat_obj
         }
-        if (is_merge) {
+        if (length(sample_list) > 1) {
                 print("start to merge samples")
                 merged_seurat <- merge(seurat_list[[1]], y = tail(seurat_list,-1), add.cell.ids = sample_list, project = project)
         } else {
                 print("skip merge")
                 merged_seurat <- seurat_list[[1]]
         }
-        
-
-        print("start to filter data")
-        filtered_seurat <- filter_seurat(merged_seurat, project)
-
         return(merged_seurat)
+
+        
 }

@@ -1,8 +1,11 @@
 # 10X data
 *_matrix
+data/
+raw_data/
 
 # R history
 .Rhistory
 
 # output data
 outputs/
+processed_data/

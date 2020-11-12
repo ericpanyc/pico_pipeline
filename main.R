@@ -1,6 +1,11 @@
-#!/usr/local/bin/env Rscript --vanilla
-library(optparse)
-source("read10X.R")
+suppressMessages(library(optparse))
+suppressMessages(library(miceadds))
+suppressMessages(library(Seurat))
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+
+path <- "~/Downloads/usc_folder/kgp/seurat/pico_pipeline/functions"
+source.all(path, grepstring="\\.R",  print.source=F, file_sep="__")
 
 option_list = list(
         make_option(c("-a", "--sample1"), type="character", default=NULL, 
@@ -27,16 +32,14 @@ if (is.null(opt$sample1)){
 
 
 sample_list = c(opt$sample1,opt$sample2,opt$sample3,opt$sample4,opt$sample5)
-# sample_list = 1:3
-if (length(sample_list) > 1) {
-        is_merge = T
-} else {
-        is_merge = F
-}
+group <- opt$project
 
-print("arguments parsed successfully, start to load data")
 
-merged_seurat <- read_filter(sample_list, opt$project, is_merge)
+
+
+
+merged_seurat <- read_filter(sample_list, group)
+filtered_seurat <- filter_seurat(merged_seurat, group)
 
 print("complete!")
 

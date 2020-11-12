@@ -1,8 +1,5 @@
-library(dplyr)
-library(ggplot2)
-
 filter_seurat <- function(seurat_obj, project) {
-        # seurat_obj@meta.data$orig.ident <- sapply(seurat_obj@meta.data$orig.ident, function(i) substr(i,1,3))
+        print("seurat object created successfully, start to filter data")
         seurat_obj$log10GenesPerUMI <- log10(seurat_obj$nFeature_RNA) / log10(seurat_obj$nCount_RNA)
         
         # Compute percent mito ratio
@@ -17,8 +14,7 @@ filter_seurat <- function(seurat_obj, project) {
         
         metadata$sample <- NA
         metadata$sample <- metadata$orig.ident
-        # metadata$sample[which(str_detect(metadata$cells, "^N_"))] <- "seurat_obj"
-        # metadata$sample[which(str_detect(metadata$cells, "^S_"))] <- "seurat_obj"
+       
         
         seurat_obj@meta.data <- metadata
         
