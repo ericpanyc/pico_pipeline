@@ -1,2 +1,8 @@
 # 10X data
 *_matrix
+
+# R history
+.Rhistory
+
+# output data
+outputs/

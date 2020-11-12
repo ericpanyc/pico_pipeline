@@ -53,7 +53,7 @@ annotations <- annotations %>%
         dplyr::select(gene_id, gene_name, entrezid,description)
 annotations$entrezid <- as.character(annotations$entrezid)
 
-name_list <- c("VS4","VS5")
+name_list <- c("VS5","VS8")
 object_list <- paste0(name_list, "_filtered_feature_bc_matrix")
 
 VS4_data <- Read10X(data.dir = "VS4_filtered_feature_bc_matrix")

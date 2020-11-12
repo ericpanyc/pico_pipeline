@@ -3,18 +3,27 @@ library(dplyr)
 library(ggplot2)
 source("filter_seurat.R")
 
-read_filter <- function(sample_list, project) {
-        dir_list <- paste0(dir_list, "_filtered_feature_bc_matrix")
+read_filter <- function(sample_list, project, is_merge) {
+        # print(is_merge)
         seurat_list = list()
-        for (file in dir_list){
-                seurat_data <- Read10X(data.dir = file)
-                seurat_obj <- CreateSeuratObject(counts = seurat_data, 
-                                                 min.features = 100, 
-                                                 project = file)
-                seurat_list[[file]] <- seurat_obj
+        for (sample in sample_list){
+                seurat_data <- Read10X(data.dir = paste0("../data/",sample, "_filtered_feature_bc_matrix"))
+                seurat_obj <- CreateSeuratObject(counts = seurat_data,
+                                                 min.features = 100,
+                                                 project = sample)
+                seurat_list[[sample]] <- seurat_obj
         }
-        merged_seurat <- merge(object_list[[1]], y = tail(seurat_list,-1), add.cell.ids = sample_lists, project = project)
-        filtered_seurat <- filter_seurat(merged_seurat)
+        if (is_merge) {
+                print("start to merge samples")
+                merged_seurat <- merge(seurat_list[[1]], y = tail(seurat_list,-1), add.cell.ids = sample_list, project = project)
+        } else {
+                print("skip merge")
+                merged_seurat <- seurat_list[[1]]
+        }
+        
+
+        print("start to filter data")
+        filtered_seurat <- filter_seurat(merged_seurat, project)
 
         return(merged_seurat)
 }
