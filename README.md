@@ -7,3 +7,11 @@ Usage:<br/>
 --nGene {200} to give the minimum threshold of number of genes per cell for filtering, default value is 250<br/>
 --geneUMI {0.7} to give the minimum threshold of log10GenesPerUMI for filtering, default value is 0.8<br/>
 --mitoRatio {0.2} to give the maximum threshold of mito genes ratio for filtering, default value is 0.2<br/>
+
+Users should install the following packages on R 3.6.3 up front:<br/>
+* optparse_1.6.6 
+* mice_3.11.0
+* miceadds_3.10-28
+* Seurat_3.1.5
+* dplyr_1.0.0
+* ggplot2_3.3.1
