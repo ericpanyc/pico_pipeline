@@ -1,5 +1,5 @@
 read_filter <- function(sample_list, project) {
-        print("arguments parsed successfully, start to load data")
+        
         seurat_list = list()
         for (sample in sample_list){
                 seurat_data <- Read10X(data.dir = paste0("../data/",sample, "_filtered_feature_bc_matrix"))
